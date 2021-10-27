@@ -129,4 +129,9 @@ dmypy.json
 .pyre/
 
 # etc
+result
+data
+
 .DS_Store
+.idea
+.vscode
