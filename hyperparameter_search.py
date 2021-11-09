@@ -10,7 +10,7 @@ import torch.optim as optim
 
 from sklearn.metrics import confusion_matrix
 
-def hyperparameter_search(args, train_x, train_y, validation_x, validation_y, device):
+def hyperparameter_search(args, train_x, train_y, validation_x, validation_y, device, DEBUG):
     def create_model(args, feature_size, device):
         if args['model'] == 'GRU':
             return GRU(feature_size, args['hidden_size'], args['num_layers'], args['dropout'], device)
@@ -41,7 +41,7 @@ def hyperparameter_search(args, train_x, train_y, validation_x, validation_y, de
         model = create_model(args, dim, device)
         optimizer = optim.Adam(model.parameters(), lr=args['lr'], weight_decay=args['weight_decay'])
         model, accuracy = train_model(model, optimizer, criterion, args, augmented_x, augmented_y,
-            validation_x, validation_y, device, False, 'result/model.pt')
+            validation_x, validation_y, device, DEBUG, 'result/model.pt')
         models.append(model)
 
         out = model(validation_x_tensor)
