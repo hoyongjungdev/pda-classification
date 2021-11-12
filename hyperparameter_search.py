@@ -27,12 +27,13 @@ def hyperparameter_search(args, train_x, train_y, validation_x, validation_y, de
     validation_x_tensor = torch.Tensor(validation_x).to(device)
 
     pos_weight =  (train_x == 0).sum() / (train_x == 1).sum()
+    #pos_weight=1
 
     criterion = nn.BCEWithLogitsLoss(pos_weight=torch.tensor(pos_weight))
 
     dim = validation_x_tensor.shape[2]
 
-    n_ensemble = 5
+    n_ensemble = 1
 
     models = []
     y_pred = []

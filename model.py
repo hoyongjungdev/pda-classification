@@ -138,14 +138,14 @@ def train_model(model, optimizer, criterion, args, train_x, train_y, validation_
                 for seq, target in validation_dataloader:
                     out = model(seq)
                     result = (out > 0.5).float()
-                    cf = confusion_matrix(target, result)
+                    cf = confusion_matrix(target.cpu(), result.cpu())
 
                     val_cf += cf
 
                 for seq, target in train_dataloader:
                     out = model(seq)
                     result = (out > 0.5).float()
-                    cf = confusion_matrix(target, result)
+                    cf = confusion_matrix(target.cpu(), result.cpu())
 
                     train_cf += cf                 
 

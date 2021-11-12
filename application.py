@@ -60,6 +60,8 @@ def run(args_list, DEBUG):
             best_accuracy = hyperparameter_search(args, train_x, train_y, val_x, val_y, device, DEBUG)
             ba_sum += best_accuracy
 
+        test_score = hyperparameter_search(args, tv_x, tv_y, test_x, test_y, device, DEBUG)
+
         with open(PREFIX+'result/result.csv','a') as f:
-            f.write('{},{},{},{}'.format(args['n_jitter'], args['jitter_alpha'], args['model'], ba_sum/n_splits))
+            f.write('{},{},{},{},{}'.format(args['n_jitter'], args['jitter_alpha'], args['model'], ba_sum/n_splits, test_score))
             f.write('\n')
