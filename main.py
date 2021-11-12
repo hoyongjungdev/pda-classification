@@ -12,9 +12,9 @@ if __name__ == '__main__':
         'dropout': [0.5],
         'hidden_size': [16],
         'num_layers': [2],
-        'n_jitter': [100, 800],
+        'n_jitter': [1],
         'jitter_alpha': [0.00125],
         'model': ['RNN', 'LSTM', 'GRU'],
     }
 
-    run(args_list)
+    run(args_list, False)
