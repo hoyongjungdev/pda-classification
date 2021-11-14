@@ -1,4 +1,4 @@
-from model import VanillaRNN, LSTM, GRU, train_model
+from model import VanillaRNN, LSTM, GRU, RETAIN, train_model
 from augmentation import augment_jitter
 from score import f1
 
@@ -18,7 +18,9 @@ def hyperparameter_search(args, train_x, train_y, validation_x, validation_y, de
             return LSTM(feature_size, args['hidden_size'], args['num_layers'], args['dropout'], device)
         elif args['model'] == 'RNN':
             return VanillaRNN(feature_size, args['hidden_size'], args['num_layers'], args['dropout'], device)
-
+        elif args['model'] == 'RETAIN':
+            return RETAIN(feature_size, args['emb_size'], args['emb_dropout'], args['visit_hidden_size'], args['visit_num_layer'],
+            args['var_hidden_size'], args['var_num_layer'], args['dropout'], device)
         return None
     
     augmented_x, augmented_y = augment_jitter(args['n_jitter'], args['jitter_alpha'], train_x, train_y)
