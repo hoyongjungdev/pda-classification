@@ -226,3 +226,86 @@ def train_model(model, optimizer, criterion, args, train_x, train_y, validation_
     print("f1:", best_acc)
 
     return model, best_acc
+
+def train_model2(model, optimizer, criterion, args, train_x, train_y, validation_x, validation_y, device, DEBUG, path):
+    train_dataloader = to_dataloader(args, train_x, train_y, device)
+    validation_dataloader = to_dataloader(args, validation_x, validation_y, device)
+    running_loss = []
+
+    val_acc = []
+    train_acc = []
+
+    best_acc = -1
+
+    for epoch in range(args['num_epochs']):
+        if DEBUG:
+            if (epoch % 1000 == 0 and epoch!=0) or epoch==args['num_epochs']-1:
+                print('epoch: {}'.format(epoch))
+                plt.plot(train_acc)
+                plt.plot(val_acc)
+                plt.legend(['train', 'validation'])
+                plt.show()
+        else:
+            if (epoch % 100 == 0 and epoch!=0) or epoch==args['num_epochs']-1:
+                print('epoch: {}'.format(epoch))
+
+
+        # train mode
+        model.train()
+
+        for seq, target in train_dataloader:
+            out = model(seq)
+            loss = criterion(out, target)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            running_loss.append(loss.item())
+        
+        # eval mode
+        model.eval()
+
+        if epoch % 10 == 0 and epoch > 0:
+            val_cf = np.zeros((2, 2))
+            train_cf = np.zeros((2, 2))
+
+            with torch.no_grad():
+                for seq, target in validation_dataloader:
+                    out = model(seq)
+                    result = (out > 0.5).float()
+                    cf = confusion_matrix(target.cpu(), result.cpu())
+                    val_cf += cf
+
+                for seq, target in train_dataloader:
+                    out = model(seq)
+                    result = (out > 0.5).float()
+                    cf = confusion_matrix(target.cpu(), result.cpu())
+
+                    train_cf += cf                 
+
+                val_f1 = f1(val_cf)
+                train_f1 = f1(train_cf)
+
+                val_acc.append(val_f1)
+                train_acc.append(train_f1)
+
+                # saving best model
+                if train_f1 > best_acc:
+                    best_acc = train_f1
+                    torch.save(model, path)
+
+    model = torch.load(path)
+    model.eval()
+
+    val_cf = np.zeros((2, 2))
+    for seq, target in validation_dataloader:
+        out = model(seq)
+        result = (out > 0.5).float()
+        cf = confusion_matrix(target.cpu(), result.cpu())
+        val_cf += cf
+
+    result = f1(val_cf)
+
+    print("f1:", result)
+
+    return model, result
