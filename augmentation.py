@@ -14,7 +14,16 @@ def jitter(x, y, n_jitter, scale):
         ji = js[i]
         data = x[ji]
 
+        cnt = 0
+        for k in range(len(data)):
+            if not np.any(data[k]):
+                cnt += 1
+
         j = np.random.normal(scale=scale, size=(length, dim))
+
+        for k in range(cnt):
+            j[k] = np.zeros(dim)
+
         jittered = data + j
 
         jittered_arr[i] = jittered
