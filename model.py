@@ -1,5 +1,5 @@
 from score import f1
-
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -10,6 +10,7 @@ import torch.nn.functional as F
 from torch.utils.data import TensorDataset, DataLoader
 
 from sklearn.metrics import confusion_matrix
+from ray import tune
 
 def to_dataloader(args, x, y, device):
     x_tensor = torch.Tensor(x).to(device) # transform to torch tensor
@@ -187,11 +188,14 @@ def train_model(model, optimizer, criterion, args, train_x, train_y, validation_
             train_cf = np.zeros((2, 2))
 
             with torch.no_grad():
+                val_loss = 0.0
+                val_steps = 0
                 for seq, target in validation_dataloader:
                     out = model(seq)
                     result = (out > 0.5).float()
+                    val_loss += criterion(torch.squeeze(out), target)
+                    val_steps += 1
                     cf = confusion_matrix(target.cpu(), result.cpu())
-
                     val_cf += cf
 
                 for seq, target in train_dataloader:
@@ -211,7 +215,10 @@ def train_model(model, optimizer, criterion, args, train_x, train_y, validation_
                 if val_f1 > best_acc:
                     best_acc = val_f1
 
-                    torch.save(model, path)
+                    with tune.checkpoint_dir(epoch) as checkpoint_dir:
+                        path = os.path.join(checkpoint_dir, "checkpoint")
+                        torch.save(model, path)
+                tune.report(loss=(val_loss / val_steps), accuracy=val_f1)
 
     model = torch.load(path)
     model.eval()
