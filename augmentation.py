@@ -70,3 +70,19 @@ def augment_jitter(n_jitter, alpha, train_x, train_y):
         ay[i+len(train_x)] = jittered_y[i]
 
     return ax, ay
+
+def augment_scale(n_jitter, alpha, train_x, train_y):
+    jittered_x, jittered_y, _ = scale(train_x, train_y, n_jitter, alpha)
+
+    ax = np.empty((train_x.shape[0] + n_jitter, train_x.shape[1], train_x.shape[2]))
+    ay = np.empty(train_x.shape[0] + n_jitter)
+
+    for i in range(len(train_x)):
+        ax[i] = train_x[i]
+        ay[i] = train_y[i]
+
+    for i in range(n_jitter):
+        ax[i+len(train_x)] = jittered_x[i]
+        ay[i+len(train_x)] = jittered_y[i]
+
+    return ax, ay

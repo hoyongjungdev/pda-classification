@@ -1,11 +1,13 @@
 from model import VanillaRNN, LSTM, GRU, RETAIN, train_model2
-from augmentation import augment_jitter
+from augmentation import augment_jitter, augment_scale
 from score import f1
 
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 
 import numpy as np
+
+import random
 
 import torch
 import torch.nn as nn
@@ -28,7 +30,7 @@ def hyperparameter_search2(args, train_x, train_y, validation_x, validation_y, d
                           args['var_hidden_size'], args['var_num_layer'], args['dropout'], device)
         return None
 
-    augmented_x, augmented_y = augment_jitter(args['n_jitter'], args['jitter_alpha'], train_x, train_y)
+    augmented_x, augmented_y = augment_scale(args['n_jitter'], args['jitter_alpha'], train_x, train_y)
     augmented_y = np.reshape(augmented_y, (-1, 1))
 
     validation_x_tensor = torch.Tensor(validation_x).to(device)
@@ -73,6 +75,7 @@ def hyperparameter_search2(args, train_x, train_y, validation_x, validation_y, d
             result[i] = 1.0
 
     cf = confusion_matrix(validation_y, result)
+    print(cf)
 
     feature_score = f1(cf)
 
@@ -84,7 +87,7 @@ DEBUG = False
 
 config = {
     'batch_size': 128,
-    'lr': 0.0012,
+    'lr': 0.0008131,
     'num_epochs': 4000,
     'weight_decay': 0,
     'dropout': 0.3,
@@ -98,14 +101,22 @@ config = {
     'var_num_layer': 2,
     'n_jitter': 5000,
     'jitter_alpha': 0.00125,
-    'model': 'GRU',
+    'model': 'LSTM',
 }
 
 PREFIX = ''
 x = np.load(PREFIX + 'data/x.npy')
 y = np.load(PREFIX + 'data/y.npy')
 
-np.random.seed(0)
+random_seed = 0
+
+torch.manual_seed(random_seed)
+torch.cuda.manual_seed(random_seed)
+torch.cuda.manual_seed_all(random_seed) # if use multi-GPU
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+np.random.seed(random_seed)
+random.seed(random_seed)
 
 # dimension
 dim = x.shape[2]
